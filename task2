@@ -1,0 +1,155 @@
+import React, { useRef, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Animated } from 'react-native';
+import Swiper from 'react-native-swiper';
+
+const OnboardingScreen = ({ navigation }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+  const slideTextAnim = useRef(new Animated.Value(100)).current;
+  const buttonAnim = useRef(new Animated.Value(0)).current;
+  const bgColorAnim = useRef(new Animated.Value(0)).current;
+  const swiperRef = useRef(null);
+  const [index, setIndex] = useState(0);
+
+  const screens = [
+    {
+      title: 'Welcome to Our App!',
+      description: 'Get ready to explore amazing features tailored just for you.',
+      image: 'https://randomuser.me/api/portraits/men/1.jpg',
+      name: 'Muhammad Irfan',
+      bgColor: '#ffadad',
+    },
+    {
+      title: 'Explore Features',
+      description: 'Enjoy smooth animations and an intuitive user experience.',
+      image: 'https://randomuser.me/api/portraits/men/2.jpg',
+      bgColor: '#ffd6a5',
+    },
+    {
+      title: 'Get Started',
+      description: 'Start using the app and make your journey seamless.',
+      image: 'https://randomuser.me/api/portraits/men/3.jpg',
+      bgColor: '#caffbf',
+    },
+  ];
+
+  useEffect(() => {
+    animateScreen();
+  }, [index]);
+
+  const animateScreen = () => {
+    fadeAnim.setValue(0);
+    scaleAnim.setValue(0.8);
+    bounceAnim.setValue(0);
+    slideTextAnim.setValue(100);
+    buttonAnim.setValue(0);
+
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.timing(scaleAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.spring(bounceAnim, { toValue: 1, friction: 3, tension: 80, useNativeDriver: true }),
+      Animated.timing(slideTextAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
+      Animated.timing(buttonAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+      Animated.timing(bgColorAnim, {
+        toValue: index,
+        duration: 500,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  const backgroundColor = bgColorAnim.interpolate({
+    inputRange: screens.map((_, i) => i),
+    outputRange: screens.map((screen) => screen.bgColor),
+  });
+
+  return (
+    <Animated.View style={[styles.container, { backgroundColor }]}>
+      <Swiper ref={swiperRef} loop={false} showsPagination={true} onIndexChanged={(i) => setIndex(i)}>
+        {screens.map((screen, i) => (
+          <View key={i} style={styles.slide}>
+            <Animated.Image
+              source={{ uri: screen.image }}
+              style={[styles.image, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}
+            />
+
+            {screen.name && <Animated.Text style={[styles.name, { opacity: fadeAnim }]}>{screen.name}</Animated.Text>}
+
+            <Animated.Text style={[styles.title, { transform: [{ translateX: slideTextAnim }] }]}>
+              {screen.title}
+            </Animated.Text>
+            <Animated.Text style={[styles.description, { transform: [{ translateX: slideTextAnim }] }]}>
+              {screen.description}
+            </Animated.Text>
+
+            <Animated.View style={[styles.buttonContainer, { opacity: buttonAnim, transform: [{ scale: buttonAnim }] }]}>
+              {i < screens.length - 1 ? (
+                <TouchableOpacity style={styles.button} onPress={() => swiperRef.current.scrollBy(1)}>
+                  <Text style={styles.buttonText}>Next</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.button} onPress={() => navigation.replace('Home')}>
+                  <Text style={styles.buttonText}>Get Started</Text>
+                </TouchableOpacity>
+              )}
+            </Animated.View>
+          </View>
+        ))}
+      </Swiper>
+    </Animated.View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  slide: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  image: {
+    width: 250,
+    height: 250,
+    resizeMode: 'contain',
+    marginBottom: 10,
+  },
+  name: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: 'gray',
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  buttonContainer: {
+    marginTop: 20,
+  },
+  button: {
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+});
+
+export default OnboardingScreen;
